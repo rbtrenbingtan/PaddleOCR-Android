@@ -68,7 +68,7 @@ jobs:
     
     - name: 构建 APK
       run: |
-        buildozer android debug
+        buildozer --log_level=2 android debug
     
     - name: 上传 APK
       uses: actions/upload-artifact@v4
