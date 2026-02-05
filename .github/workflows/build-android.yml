@@ -57,15 +57,15 @@ jobs:
     - name: 安装 Python 依赖
       run: |
         pip install --upgrade pip
-        pip install buildozer cython
-
-    # 注意：移除了 setup-android Action。
-    # 让 Buildozer 自动下载它需要的 SDK/NDK 版本，避免版本冲突。
+        # 核心修复：锁定 Cython 版本在 3.0 以下以解决 'long' 类型报错
+        pip install "Cython<3.0" buildozer 
 
     - name: 构建 APK
       run: |
-        # 使用 yes 管道自动接受可能出现的 SDK 许可协议
-        yes | buildozer --log_level=2 android debug
+        # 预先接受 SDK 许可，避免在构建过程中使用管道导致 Broken pipe
+        mkdir -p ~/.android && touch ~/.android/repositories.cfg
+        # 使用 buildozer 运行构建
+        buildozer --log_level=2 android debug
 
     - name: 上传 APK
       uses: actions/upload-artifact@v4
@@ -76,7 +76,6 @@ jobs:
     - name: 获取版本信息
       id: version
       run: |
-        # 增加容错，防止 grep 失败
         if [ -f buildozer.spec ]; then
           VERSION=$(grep "version =" buildozer.spec | cut -d'=' -f2 | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
