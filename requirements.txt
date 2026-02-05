@@ -1,0 +1,12 @@
+# Android 版 PaddleOCR 依赖
+# 简化版本，只包含必需的包
+
+# Kivy 框架（用于构建 Android UI）
+kivy==2.2.1
+
+# 图像处理
+Pillow>=9.0.0
+
+# Cython（构建需要）
+Cython>=0.29.0
+
