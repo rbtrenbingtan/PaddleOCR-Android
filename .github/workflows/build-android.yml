@@ -3,14 +3,14 @@ name: Build Android APK
 on:
   push:
     branches: [ main, master ]
-    tags: [ 'v*' ]  # 支持 v1.0.0 等格式的 tag 触发 Release
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # 允许手动运行
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # GitHub Actions 当前 ubuntu-latest = Ubuntu 24.04 (noble)
 
     steps:
       - name: 检出代码
@@ -21,8 +21,9 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: 安装系统依赖
+      - name: 安装系统依赖（Ubuntu 24.04 兼容）
         run: |
+          set -euxo pipefail
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
@@ -31,12 +32,12 @@ jobs:
             unzip \
             openjdk-11-jdk \
             autoconf \
-            automake \          # ←←← 关键修复：解决 LT_SYS_SYMBOL_USCORE 错误
+            automake \
             libtool \
             pkg-config \
             zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
+            libncurses-dev \        # 替代 libncurses5-dev（Ubuntu 24.04 不再提供）
+            libtinfo-dev \          # 提供 terminfo 支持，避免编译警告
             cmake \
             libffi-dev \
             libssl-dev \
@@ -45,7 +46,9 @@ jobs:
             libreadline-dev \
             libbz2-dev \
             libexpat1-dev \
-            liblzma-dev
+            liblzma-dev \
+            libx11-dev \
+            libxtst-dev
 
       - name: 缓存 pip
         uses: actions/cache@v4
@@ -86,6 +89,9 @@ jobs:
         id: get_version
         run: |
           VERSION=$(grep -E "^version\s*=" buildozer.spec | cut -d'=' -f2 | tr -d ' ')
+          if [ -z "$VERSION" ]; then
+            VERSION="unknown"
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Detected version: $VERSION"
 
