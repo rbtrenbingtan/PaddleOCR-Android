@@ -30,7 +30,9 @@ jobs:
           unzip \
           openjdk-11-jdk \
           autoconf \
+          automake \
           libtool \
+          libtool-bin \
           pkg-config \
           zlib1g-dev \
           libncurses5-dev \
